@@ -31,7 +31,7 @@
   "homepage": "https://github.com/moxystudio/react-redata",
   "bugs": "https://github.com/moxystudio/react-redata/issues",
   "repository": "git@github.com:moxystudio/react-redata.git",
-  "main": "index.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "devDependencies": {
     "babel": "^6.5.2",
@@ -47,6 +47,6 @@
     "rimraf": "^2.5.4"
   },
   "dependencies": {
-    "react": "^15.4.2",
+    "react": "^15.4.2"
   }
 }
