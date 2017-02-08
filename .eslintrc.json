@@ -1,0 +1,10 @@
+{
+    "root": true,
+    "extends": [
+        "eslint-config-moxy/es6.js",
+        "eslint-config-moxy/addons/browser.js",
+        "eslint-config-moxy/addons/node.js",
+        "eslint-config-moxy/addons/es6-modules.js",
+        "eslint-config-moxy/addons/react.js"
+    ]
+}

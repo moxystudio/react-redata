@@ -1,0 +1,52 @@
+{
+  "name": "redata",
+  "description": "React data container for isomorphic applications, providing a unified and performant load & reload pattern",
+  "version": "0.0.1",
+  "keywords": [
+    "react",
+    "react.js",
+    "isomorphic",
+    "data",
+    "loader",
+    "load",
+    "reload",
+    "reloader",
+    "container",
+    "redux",
+    "server",
+    "client",
+    "server-side",
+    "client-side",
+    "rc"
+  ],
+  "scripts": {
+    "build": "npm run clean && babel src --out-dir .",
+    "clean": "rimraf *.js",
+    "lint": "eslint '{src/**/*.js,test/**/*.js}' --ignore-pattern=test/coverage",
+    "prepublish": "npm run lint && npm run build",
+    "test": "npm run lint",
+    "watch": "npm run build && chokidar 'src/**/*' 'package.json' '.babelrc' -c 'npm run build' --verbose"
+  },
+  "author": "André Cruz <andre@moxy.studio>",
+  "homepage": "https://github.com/moxystudio/react-redata",
+  "bugs": "https://github.com/moxystudio/react-redata/issues",
+  "repository": "git@github.com:moxystudio/react-redata.git",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-cli": "^6.22.2",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.22.0",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-preset-react": "^6.22.0",
+    "babel-preset-stage-3": "^6.22.0",
+    "chokidar-cli": "^1.2.0",
+    "eslint": "^3.9.1",
+    "eslint-config-moxy": "^1.0.0",
+    "eslint-plugin-react": "^6.9.0",
+    "rimraf": "^2.5.4"
+  },
+  "dependencies": {
+    "react": "^15.4.2",
+  }
+}
