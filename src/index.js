@@ -1,3 +1,5 @@
-'use strict';
+import redata from './redata';
+import reactRedata from './react/react-redata';
 
-module.exports = {};
+export default redata;
+export { reactRedata };
