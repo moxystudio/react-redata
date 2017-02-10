@@ -20,7 +20,7 @@
     "rc"
   ],
   "scripts": {
-    "build": "npm run clean && babel src --out-dir ./dist",
+    "build": "npm run clean && babel src --out-dir ./dist --source-maps inline",
     "clean": "rimraf *.js",
     "lint": "eslint '{src/**/*.js,test/**/*.js}' --ignore-pattern=test/coverage",
     "prepublish": "npm run lint && npm run build",

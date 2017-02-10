@@ -1,12 +1,17 @@
-function redata(loader, shouldReload = defaultShouldReload, mapper = defaultMapper, initialCtx = defaultInitialCtx) {
+function configRedata(loader, shouldReload = defaultShouldReload, mapper = defaultMapper, initialCtx = defaultInitialCtx) {
     // Initialise context.
     const ctx = initialCtx;
 
-    function configuredRedata(params, onUpdate) {
+    function redata(params, onUpdate) {
+console.log('triggered redata', {
+    shouldReload: shouldReload(params)
+}, arguments);
         // If should not reload the data.
         if (!shouldReload(params)) {
+            // Inform any subscriber.
             onUpdate(ctx.lastData);
 
+            // Resolve with final data.
             return Promise.resolve(ctx.lastData);
         }
 
@@ -18,7 +23,7 @@ function redata(loader, shouldReload = defaultShouldReload, mapper = defaultMapp
         onUpdate && onUpdate(ctx.lastData);
 
         const loadResult = load(loader, params, (data) => {
-            // If not the last load, ignore.
+            // If not the promise from last load, ignore.
             if (ctx.promise !== loadResult) {
                 return;
             }
@@ -48,14 +53,14 @@ function redata(loader, shouldReload = defaultShouldReload, mapper = defaultMapp
     }
 
     // Mark this function as being a redata, for internal purposes, speacially useful for compositions.
-    configuredRedata.isRedata = true;
+    redata.isRedata = true;
 
     // Store the load, shouldReload and mapper for future reference in redata compositions.
-    configuredRedata.load = load.bind(null, loader);
-    configuredRedata.shouldReload = shouldReload;
-    configuredRedata.map = mapper;
+    redata.load = load.bind(null, loader);
+    redata.shouldReload = shouldReload;
+    redata.map = mapper;
 
-    return configuredRedata;
+    return redata;
 }
 
 // private stuff ----------------------------------------------------------------------------------
@@ -95,4 +100,4 @@ function defaultMapper(data) {
 
 // ------------------------------------------------------------------------------------------------
 
-export default redata;
+export default configRedata;

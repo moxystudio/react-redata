@@ -11,11 +11,19 @@ function redataComponent(boundRedata, OriginalComponent) {
         constructor(props) {
             super(props);
 
+            // Initialise state with undefined data and WrappedComponent state.
+            const originalComponentState = {
+                state: undefined,
+                nextState: undefined,
+            };
+
             this.state = {
                 data: undefined,
+                originalComponentState,
             };
 
             this._handleOnDataUpdate = this._handleOnDataUpdate.bind(this);
+            this._handleOnStateUpdate = this._handleOnStateUpdate.bind(this);
 
             // If it's in the browser, check if there is data coming from server side rendering.
             const serverData = this._loadFromServerRender();
@@ -27,6 +35,8 @@ function redataComponent(boundRedata, OriginalComponent) {
             serverData === undefined && redata({
                 props: {},
                 nextProps: props,
+                state: originalComponentState.state,
+                nextState: originalComponentState.nextState,
                 data: serverData,
             }, this._handleOnDataUpdate);
         }
@@ -36,20 +46,36 @@ function redataComponent(boundRedata, OriginalComponent) {
         }
 
         componentWillUpdate(nextProps) {
+// console.log('WrapperComponent::componentWillUpdate');
+            const { state, nextState } = this.state.originalComponentState;
+
             // Flow params into redata.
-            redata({ props: this.props, nextProps, data: this.state.data }, this._handleOnDataUpdate);
+            redata({ props: this.props, nextProps, state, nextState, data: this.state.data }, this._handleOnDataUpdate);
+
+            // If OriginalComponent state is changing, store nextState in state.
+            state !== nextState && this._safeSetState({
+                originalComponentState: {
+                    state: nextState,
+                    nextState,
+                },
+            });
         }
 
         render() {
-            // Render original component passing the received props and the spreaded data.
-            return <OriginalComponent { ...this.props } { ...this.state.data } />;
+            // Render extended passing the received props and the spreaded data.
+            return (
+                <ExtendedComponent
+                    { ...this.props }
+                    { ...this.state.data }
+                    onRedataOriginalComponentStateUpdate={ this._handleOnStateUpdate } />
+            );
         }
 
-        _safeSetState(nextState) {
+        _safeSetState(state) {
             if (this._isMounted) {
-                this.setState(nextState);
+                this.setState(state);
             } else {
-                this.state = { ...this.state, ...nextState };
+                this.state = { ...this.state, ...state };
             }
         }
 
@@ -68,11 +94,14 @@ function redataComponent(boundRedata, OriginalComponent) {
         }
 
         _handleOnDataUpdate(data) {
+console.log('_handleOnDataUpdate', data);
             this._safeSetState({ data });
         }
 
         _handleOnStateUpdate(state, nextState) {
-
+            this._safeSetState({
+                originalComponentState: { state, nextState },
+            });
         }
     }
 
@@ -81,15 +110,18 @@ function redataComponent(boundRedata, OriginalComponent) {
     // Extend the OriginalComponent, so we get access to lifecycle methods and, consequently, the state changes.
     class ExtendedComponent extends OriginalComponent {
         componentWillUpdate(nextProps, nextState) {
-            super.componentWillUpdate(nextProps, nextState);
+// console.log('ExtendedComponent::componentWillUpdate');
+            // If OriginalComponent has a componentWillUpdate method, call it first.
+            super.componentWillUpdate && super.componentWillUpdate(nextProps, nextState);
 
-            // If state changed, inform __redataOnStateUpdate.
-            shallowequal(this.state, nextState) && this.props.__redataOnStateUpdate(this.state, nextState);
+            // If state changed, inform onRedataOriginalComponentStateUpdate.
+            (!shallowequal(this.state, nextState)) && this.props.onRedataOriginalComponentStateUpdate(this.state, nextState);
         }
     }
 
     ExtendedComponent.propTypes = {
-        __redataOnStateUpdate: PropTypes.func.isRequired,
+        // Using a hard to collide prop, which is used to hook into state updates of the OriginalComponent.
+        onRedataOriginalComponentStateUpdate: PropTypes.func.isRequired,
     };
 
     return WrapperComponent;

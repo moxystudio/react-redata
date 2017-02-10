@@ -6,7 +6,7 @@ class ShoppingBag extends PureComponent {
     render() {
         const { result, loading, error } = this.props;
 
-        console.log('rendering shopping bag', this.props);
+        // console.log('rendering shopping bag', this.props);
 
         if (loading) {
             return <div>Loading...</div>;
@@ -17,10 +17,14 @@ class ShoppingBag extends PureComponent {
         }
 
         return (
-            <ul>{ result.map((item) => (
-                <li key={ item.id }>{ item.name }</li>
+            <ul>{ result.map((item, i) => (
+                <li key={ item.id } onClick={ () => this._handleOnClick(i) }>{ item.name }</li>
             )) }</ul>
         );
+    }
+
+    _handleOnClick(i) {
+        this.setState({ clicked: i });
     }
 }
 
@@ -32,6 +36,6 @@ ShoppingBag.propTypes = {
 };
 
 export default reactRedata(
-    ({ nextProps }) => fetchBag(nextProps.bagId), // loader
-    ({ props, nextProps }) => props.bagId !== nextProps.bagId, // shouldReload policy
+    ({ props, nextProps, state, nextState, data }) => /*console.log({props, nextProps, state, nextState, data}) ||*/ fetchBag(nextProps.bagId), // loader
+    ({ props, nextProps, state, nextState, data }) => /*console.log({props, nextProps, state, nextState, data}) ||*/ props.bagId !== nextProps.bagId, // shouldReload policy
 )(ShoppingBag);
