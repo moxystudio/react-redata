@@ -31,10 +31,12 @@ function redataComponent(boundRedata, WrappedComponent) {
 
             var _this = _possibleConstructorReturn(this, (RedataComponent.__proto__ || Object.getPrototypeOf(RedataComponent)).call(this, props));
 
+            _this.state = {};
+
             _this._handleOnUpdate = _this._handleOnUpdate.bind(_this);
 
             // If it's in the browser, check if there is data coming from server side rendering.
-            var serverData = typeof window === 'undefined' ? undefined : _this._loadFromServerRender();
+            var serverData = _this._loadFromServerRender();
 
             // Finalise configuration of our redata.
             _this._redata = boundRedata(serverData);
@@ -46,13 +48,15 @@ function redataComponent(boundRedata, WrappedComponent) {
         }
 
         _createClass(RedataComponent, [{
+            key: 'componentDidMount',
+            value: function componentDidMount() {
+                this._isMounted = true;
+            }
+        }, {
             key: 'componentWillUpdate',
             value: function componentWillUpdate(nextProps) {
-                var props = this.props;
-
                 // Flow params into redata.
-
-                this._redata({ props: props, nextProps: nextProps }, this._handleOnUpdate);
+                this._redata({ props: this.props, nextProps: nextProps }, this._handleOnUpdate);
             }
         }, {
             key: 'render',
@@ -61,10 +65,19 @@ function redataComponent(boundRedata, WrappedComponent) {
                 return _react2.default.createElement(WrappedComponent, _extends({}, this.props, this.state));
             }
         }, {
+            key: '_safeSetState',
+            value: function _safeSetState(nextState) {
+                if (this._isMounted) {
+                    this.setState(nextState);
+                } else {
+                    this.state = _extends({}, this.state, nextState);
+                }
+            }
+        }, {
             key: '_loadFromServerRender',
             value: function _loadFromServerRender() {
                 // If data was already available from server.
-                if (window.__redata && window.__redata.store) {
+                if (typeof window !== 'undefined' && window.__redata && window.__redata.store) {
                     return window.__redata.store[this._componentUniqueId()];
                 }
 
@@ -82,7 +95,7 @@ function redataComponent(boundRedata, WrappedComponent) {
                 console.log('_handleOnUpdate', data);
                 // Map the load result using the mapper and store it in the state, which will trigger a render.
                 // this.setState({ ...(mapper(data)) });
-                this.setState(_extends({}, data));
+                this._safeSetState(_extends({}, data));
             }
         }]);
 

@@ -1,37 +1,49 @@
-function redata(loader, shouldReload = defaultShouldReload, mapper = defaultMapper, initialData = undefined) {
-    // ctx will hold last cached data.
-    const ctx = {
-        cachedData: initialData, // Here only for readability, holds the last cached data.
-        final: true, // Whether the cached data is final.
-    };
+// Default initial context for new redatas.
+const defaultInitialCtx = {
+    lastData: undefined, // Holds the last loaded data.
+    final: false, // Whether lastData is final or a result of onUpdate.
+};
+
+const defaultInitialData = { loading: true, error: undefined, result: undefined };
+
+function redata(loader, shouldReload = defaultShouldReload, mapper = defaultMapper, initialCtx = defaultInitialCtx) {
+    // Initialise context.
+    const ctx = initialCtx;
 
     function configuredRedata(params, onUpdate) {
-console.log('redata()')
+console.log('redata()');
 
         // If should not reload the data.
         if (!shouldReload(params)) {
-            onUpdate(ctx.cachedData, ctx.final);
+            onUpdate(ctx.lastData);
 console.log('should NOT reload');
-            return Promise.resolve(ctx.cachedData);
+            return Promise.resolve(ctx.lastData);
         }
 
 console.log('going to load()');
-        // Data not valid, load data and subscribe to its updates.
-        delete ctx.cachedData;
-        ctx.final = false;
+        // Data not valid, load new data and subscribe to its updates.
+        ctx.lastData = { ...defaultInitialData };
+        ctx.final = false; // Not final, waiting to get results.
 
-        return load(loader, params, (data, final) => {
+        // Update any subscriber about new data.
+        onUpdate && onUpdate(ctx.lastData);
+
+        return load(loader, params, (data) => {
             if (ctx.final) {
                 // TODO: Consider adding a bit more context here.
                 throw new Error(`redata already finalised and new data received: ${JSON.stringify(data)}`);
             }
 
             // Cache data in case redata triggers again and shouldReload determines that cache is valid.
-            ctx.cachedData = data;
-            ctx.final = final;
+            ctx.lastData = data;
 
             // Inform any subscriber.
-            onUpdate && onUpdate(data, final);
+            onUpdate && onUpdate(data);
+        }).then((data) => {
+            // No longer accept onUpdate.
+            ctx.final = true;
+
+            return data;
         });
     }
 
@@ -44,10 +56,8 @@ console.log('going to load()');
 }
 
 function load(loader, params, onUpdate) {
-    // Let's create a new data.
-    const data = { loading: true };
-
-    onUpdate(data, false);
+    // Init new data.
+    const data = { ...defaultInitialData };
 
     // Start loading, passing the parameters that were provided, and return a promise for the loader resulting data.
     return loader(params)
@@ -55,8 +65,8 @@ function load(loader, params, onUpdate) {
         .catch((error) => { data.error = error; })
         .then(() => {
             data.loading = false;
-
-            onUpdate(data, true);
+console.log('final then');
+            onUpdate(data);
 
             return data;
         });
@@ -75,4 +85,3 @@ function defaultMapper(data) {
 // ------------------------------------------------------------------------------------------------
 
 export default redata;
-export { load };

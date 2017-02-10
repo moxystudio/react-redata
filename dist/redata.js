@@ -3,43 +3,58 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+// Default initial context for new redatas.
+var defaultInitialCtx = {
+    lastData: undefined, // Holds the last loaded data.
+    final: false };
+
+var defaultInitialData = { loading: true, error: undefined, result: undefined };
+
 function redata(loader) {
     var shouldReload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultShouldReload;
     var mapper = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : defaultMapper;
-    var initialData = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
+    var initialCtx = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : defaultInitialCtx;
 
-    // ctx will hold last cached data.
-    var ctx = {
-        cachedData: initialData, // Here only for readability, holds the last cached data.
-        final: true };
+    // Initialise context.
+    var ctx = initialCtx;
 
     function configuredRedata(params, onUpdate) {
         console.log('redata()');
 
         // If should not reload the data.
         if (!shouldReload(params)) {
-            onUpdate(ctx.cachedData, ctx.final);
+            onUpdate(ctx.lastData);
             console.log('should NOT reload');
-            return Promise.resolve(ctx.cachedData);
+            return Promise.resolve(ctx.lastData);
         }
 
         console.log('going to load()');
-        // Data not valid, load data and subscribe to its updates.
-        delete ctx.cachedData;
-        ctx.final = false;
+        // Data not valid, load new data and subscribe to its updates.
+        ctx.lastData = _extends({}, defaultInitialData);
+        ctx.final = false; // Not final, waiting to get results.
 
-        return load(loader, params, function (data, final) {
+        // Update any subscriber about new data.
+        onUpdate && onUpdate(ctx.lastData);
+
+        return load(loader, params, function (data) {
             if (ctx.final) {
                 // TODO: Consider adding a bit more context here.
                 throw new Error('redata already finalised and new data received: ' + JSON.stringify(data));
             }
 
             // Cache data in case redata triggers again and shouldReload determines that cache is valid.
-            ctx.cachedData = data;
-            ctx.final = final;
+            ctx.lastData = data;
 
             // Inform any subscriber.
-            onUpdate && onUpdate(data, final);
+            onUpdate && onUpdate(data);
+        }).then(function (data) {
+            // No longer accept onUpdate.
+            ctx.final = true;
+
+            return data;
         });
     }
 
@@ -52,10 +67,8 @@ function redata(loader) {
 }
 
 function load(loader, params, onUpdate) {
-    // Let's create a new data.
-    var data = { loading: true };
-
-    onUpdate(data, false);
+    // Init new data.
+    var data = _extends({}, defaultInitialData);
 
     // Start loading, passing the parameters that were provided, and return a promise for the loader resulting data.
     return loader(params).then(function (result) {
@@ -64,8 +77,8 @@ function load(loader, params, onUpdate) {
         data.error = error;
     }).then(function () {
         data.loading = false;
-
-        onUpdate(data, true);
+        console.log('final then');
+        onUpdate(data);
 
         return data;
     });
@@ -84,4 +97,3 @@ function defaultMapper(data) {
 // ------------------------------------------------------------------------------------------------
 
 exports.default = redata;
-exports.load = load;
