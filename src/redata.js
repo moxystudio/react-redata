@@ -28,7 +28,11 @@ console.log('going to load()');
         // Update any subscriber about new data.
         onUpdate && onUpdate(ctx.lastData);
 
-        return load(loader, params, (data) => {
+        const loadResult = load(loader, params, (data) => {
+            // If not the last load, ignore.
+            if (ctx.promise !== loadResult) {
+                return;
+            }
             if (ctx.final) {
                 // TODO: Consider adding a bit more context here.
                 throw new Error(`redata already finalised and new data received: ${JSON.stringify(data)}`);
@@ -40,11 +44,15 @@ console.log('going to load()');
             // Inform any subscriber.
             onUpdate && onUpdate(data);
         }).then((data) => {
-            // No longer accept onUpdate.
-            ctx.final = true;
+            // If this is the last load, mark as no longer accepting onUpdate.
+            ctx.promise === loadResult && (ctx.final = true);
 
             return data;
         });
+
+        ctx.promise = loadResult; // store promise reference in order to check which is the last one if multiple resolve
+
+        return loadResult;
     }
 
     // Store the load, shouldReload and mapper for future reference in redata compositions.
