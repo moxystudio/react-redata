@@ -42,7 +42,11 @@ function redataComponent(boundRedata, WrappedComponent) {
             _this._redata = boundRedata(serverData);
             console.log('will redata in constructor');
             // If nothing come from server, redata.
-            serverData === undefined && _this._redata({ props: {}, nextProps: props }, _this._handleOnUpdate);
+            serverData === undefined && _this._redata({
+                props: {},
+                nextProps: props,
+                data: serverData
+            }, _this._handleOnUpdate);
             console.log('did redata in constructor');
             return _this;
         }
@@ -56,7 +60,7 @@ function redataComponent(boundRedata, WrappedComponent) {
             key: 'componentWillUpdate',
             value: function componentWillUpdate(nextProps) {
                 // Flow params into redata.
-                this._redata({ props: this.props, nextProps: nextProps }, this._handleOnUpdate);
+                this._redata({ props: this.props, nextProps: nextProps, data: this._lastData }, this._handleOnUpdate);
             }
         }, {
             key: 'render',
@@ -93,8 +97,9 @@ function redataComponent(boundRedata, WrappedComponent) {
             key: '_handleOnUpdate',
             value: function _handleOnUpdate(data) {
                 console.log('_handleOnUpdate', data);
-                // Map the load result using the mapper and store it in the state, which will trigger a render.
-                // this.setState({ ...(mapper(data)) });
+                // TODO: Map the load result using the mapper and store it in the state, which will trigger a render.
+                this._lastData = data;
+
                 this._safeSetState(_extends({}, data));
             }
         }]);

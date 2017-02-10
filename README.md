@@ -1,5 +1,7 @@
 # redata
 
+**DISCLAIMER:** THIS MODULE IS COMPLETELY WORK IN PROGRESS, AND WILL BE FOR THE NEXT FEW DAYS. IF YOU LIKE THE WORK SO FAR, KEEP AN EYE OUT, WE SHOULD BE RELEASING A STABLE VERSION IN A WEEK OR SO.
+
 [![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency status][david-dm-image]][david-dm-url] [![Dev Dependency status][david-dm-dev-image]][david-dm-dev-url]
 
 [npm-url]:https://npmjs.org/package/redata
@@ -65,7 +67,7 @@ ShoppingBag.propTypes = {
 };
 
 export default redata(
-	({ props }) => fetchBag(props.bagId),                      // loader
+	({ nextProps }) => fetchBag(nextProps.bagId),              // loader
 	({ props, nextProps }) => props.bagId !== nextProps.bagId, // shouldReload policy
 )(ShoppingBag);
 ```
