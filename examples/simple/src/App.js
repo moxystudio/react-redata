@@ -14,7 +14,7 @@ class App extends Component {
                 <p className="App-intro">
                     To get started, edit <code>src/App.js</code> and save to reload.
                 </p>
-                <ShoppingBag bagId={ this.props.bagId } />
+                <ShoppingBag bagId={ this.props.bagId } somethingElse={ this.props.somethingElse } />
             </div>
         );
     }
@@ -22,6 +22,7 @@ class App extends Component {
 
 App.propTypes = {
     bagId: PropTypes.string.isRequired,
+    somethingElse: PropTypes.string.isRequired,
 };
 
 export default App;

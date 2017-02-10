@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -22,16 +22,13 @@ function redata(loader) {
     var ctx = initialCtx;
 
     function configuredRedata(params, onUpdate) {
-        console.log('redata()');
-
         // If should not reload the data.
         if (!shouldReload(params)) {
             onUpdate(ctx.lastData);
-            console.log('should NOT reload');
+
             return Promise.resolve(ctx.lastData);
         }
 
-        console.log('going to load()');
         // Data not valid, load new data and subscribe to its updates.
         ctx.lastData = _extends({}, defaultInitialData);
         ctx.final = false; // Not final, waiting to get results.
@@ -44,9 +41,11 @@ function redata(loader) {
             if (ctx.promise !== loadResult) {
                 return;
             }
+
+            // If loader had already resolved, then this is a programmer error, and should just fail.
             if (ctx.final) {
                 // TODO: Consider adding a bit more context here.
-                throw new Error('redata already finalised and new data received: ' + JSON.stringify(data));
+                throw new Error("redata already finalised and new data received: " + JSON.stringify(data));
             }
 
             // Cache data in case redata triggers again and shouldReload determines that cache is valid.
@@ -58,6 +57,7 @@ function redata(loader) {
             // If this is the last load, mark as no longer accepting onUpdate.
             ctx.promise === loadResult && (ctx.final = true);
 
+            // Finally resolve load promise.
             return data;
         });
 
@@ -66,6 +66,9 @@ function redata(loader) {
         return loadResult;
     }
 
+    // Mark this function as being a redata, for internal purposes, speacially useful for compositions.
+    configuredRedata.isRedata = true;
+
     // Store the load, shouldReload and mapper for future reference in redata compositions.
     configuredRedata.load = load.bind(null, loader);
     configuredRedata.shouldReload = shouldReload;
@@ -73,6 +76,8 @@ function redata(loader) {
 
     return configuredRedata;
 }
+
+// private stuff ----------------------------------------------------------------------------------
 
 function load(loader, params, onUpdate) {
     // Init new data.
@@ -85,14 +90,12 @@ function load(loader, params, onUpdate) {
         data.error = error;
     }).then(function () {
         data.loading = false;
-        console.log('final then');
+
         onUpdate(data);
 
         return data;
     });
 }
-
-// private stuff ----------------------------------------------------------------------------------
 
 function defaultShouldReload() {
     return false;

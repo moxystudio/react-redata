@@ -40,14 +40,13 @@ function redataComponent(boundRedata, WrappedComponent) {
 
             // Finalise configuration of our redata.
             _this._redata = boundRedata(serverData);
-            console.log('will redata in constructor');
+
             // If nothing come from server, redata.
             serverData === undefined && _this._redata({
                 props: {},
                 nextProps: props,
                 data: serverData
             }, _this._handleOnUpdate);
-            console.log('did redata in constructor');
             return _this;
         }
 
@@ -96,7 +95,6 @@ function redataComponent(boundRedata, WrappedComponent) {
         }, {
             key: '_handleOnUpdate',
             value: function _handleOnUpdate(data) {
-                console.log('_handleOnUpdate', data);
                 // TODO: Map the load result using the mapper and store it in the state, which will trigger a render.
                 this._lastData = data;
 

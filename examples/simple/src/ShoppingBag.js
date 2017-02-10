@@ -32,6 +32,6 @@ ShoppingBag.propTypes = {
 };
 
 export default reactRedata(
-    ({ nextProps }) => console.log(nextProps) || fetchBag(nextProps.bagId), // loader
+    ({ nextProps }) => fetchBag(nextProps.bagId), // loader
     ({ props, nextProps }) => props.bagId !== nextProps.bagId, // shouldReload policy
 )(ShoppingBag);

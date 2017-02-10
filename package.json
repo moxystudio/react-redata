@@ -1,7 +1,7 @@
 {
   "name": "redata",
   "description": "React data container for isomorphic applications, providing a unified and performant load & reload pattern",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "keywords": [
     "react",
     "react.js",
