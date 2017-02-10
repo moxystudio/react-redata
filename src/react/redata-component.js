@@ -1,28 +1,34 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, PropTypes } from 'react';
+import shallowequal from 'shallowequal';
 
 // public stuff -----------------------------------------------------------------------------------
 
-function redataComponent(boundRedata, WrappedComponent) {
-    class RedataComponent extends PureComponent {
+function redataComponent(boundRedata, OriginalComponent) {
+    // Will hold redata that is shared by Wrapper and Extended components.
+    let redata;
+
+    class WrapperComponent extends PureComponent {
         constructor(props) {
             super(props);
 
-            this.state = {};
+            this.state = {
+                data: undefined,
+            };
 
-            this._handleOnUpdate = this._handleOnUpdate.bind(this);
+            this._handleOnDataUpdate = this._handleOnDataUpdate.bind(this);
 
             // If it's in the browser, check if there is data coming from server side rendering.
             const serverData = this._loadFromServerRender();
 
             // Finalise configuration of our redata.
-            this._redata = boundRedata(serverData);
+            redata = boundRedata(serverData);
 
             // If nothing come from server, redata.
-            serverData === undefined && this._redata({
+            serverData === undefined && redata({
                 props: {},
                 nextProps: props,
                 data: serverData,
-            }, this._handleOnUpdate);
+            }, this._handleOnDataUpdate);
         }
 
         componentDidMount() {
@@ -31,12 +37,12 @@ function redataComponent(boundRedata, WrappedComponent) {
 
         componentWillUpdate(nextProps) {
             // Flow params into redata.
-            this._redata({ props: this.props, nextProps, data: this._lastData }, this._handleOnUpdate);
+            redata({ props: this.props, nextProps, data: this.state.data }, this._handleOnDataUpdate);
         }
 
         render() {
-            // Render wrapped component passing the received props and the spreaded data.
-            return <WrappedComponent { ...this.props } { ...this.state } />;
+            // Render original component passing the received props and the spreaded data.
+            return <OriginalComponent { ...this.props } { ...this.state.data } />;
         }
 
         _safeSetState(nextState) {
@@ -61,23 +67,38 @@ function redataComponent(boundRedata, WrappedComponent) {
             return 'foo';
         }
 
-        _handleOnUpdate(data) {
-            // TODO: Map the load result using the mapper and store it in the state, which will trigger a render.
-            this._lastData = data;
+        _handleOnDataUpdate(data) {
+            this._safeSetState({ data });
+        }
 
-            this._safeSetState({ ...data });
+        _handleOnStateUpdate(state, nextState) {
+
         }
     }
 
-    RedataComponent.displayName = `Redata(${getDisplayName(WrappedComponent)})`;
+    WrapperComponent.displayName = `Redata(${getDisplayName(OriginalComponent)})`;
 
-    return RedataComponent;
+    // Extend the OriginalComponent, so we get access to lifecycle methods and, consequently, the state changes.
+    class ExtendedComponent extends OriginalComponent {
+        componentWillUpdate(nextProps, nextState) {
+            super.componentWillUpdate(nextProps, nextState);
+
+            // If state changed, inform __redataOnStateUpdate.
+            shallowequal(this.state, nextState) && this.props.__redataOnStateUpdate(this.state, nextState);
+        }
+    }
+
+    ExtendedComponent.propTypes = {
+        __redataOnStateUpdate: PropTypes.func.isRequired,
+    };
+
+    return WrapperComponent;
 }
 
 // private stuff ----------------------------------------------------------------------------------
 
-function getDisplayName(WrappedComponent) {
-    return WrappedComponent.displayName || WrappedComponent.name || 'Component';
+function getDisplayName(OriginalComponent) {
+    return OriginalComponent.displayName || OriginalComponent.name || 'Component';
 }
 
 // ------------------------------------------------------------------------------------------------

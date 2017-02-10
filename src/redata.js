@@ -1,11 +1,3 @@
-// Default initial context for new redatas.
-const defaultInitialCtx = {
-    lastData: undefined, // Holds the last loaded data.
-    final: false, // Whether lastData is final or a result of onUpdate.
-};
-
-const defaultInitialData = { loading: true, error: undefined, result: undefined };
-
 function redata(loader, shouldReload = defaultShouldReload, mapper = defaultMapper, initialCtx = defaultInitialCtx) {
     // Initialise context.
     const ctx = initialCtx;
@@ -67,6 +59,14 @@ function redata(loader, shouldReload = defaultShouldReload, mapper = defaultMapp
 }
 
 // private stuff ----------------------------------------------------------------------------------
+
+// Default initial context for new redatas.
+const defaultInitialCtx = {
+    lastData: undefined, // Holds the last loaded data.
+    final: false, // Whether lastData is final or a result of onUpdate.
+};
+
+const defaultInitialData = { loading: true, error: undefined, result: undefined };
 
 function load(loader, params, onUpdate) {
     // Init new data.

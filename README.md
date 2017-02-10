@@ -44,13 +44,13 @@ import fetchBag from './fetchBag';
 class ShoppingBag extends PureComponent {
 	render() {
 		const { result, loading, error } = this.props;
-		
+
 		// loading and error are provided by redata, but you can rename
 		// or even drop any property that you don't need in the mapper
 		if (error || loading) {
 			return null; // you could render an error message or loading respectively
 		}
-		
+
 		return (
 			<ul>{ result.map((item) => (
 				<li key={ item.id }>{ item.name }</li>
@@ -110,6 +110,18 @@ Here's a breakdown of how the whole redata flow works:
 		- redata is wrapping a component: data is spread and injected as props into the underlying component.
 		- redata is not wrapping a component, typically because it is composing a larger redata: the promise that was returned by redata resolves.
 	5. If data is no longer good, the loader is called.
+
+## TODO
+
+- `react-redata`:
+    - Traverse tree, find redatas, wait for them to resolve, and store data in global store for client to pick up on.
+    - Provide `state` and `nextState` to `shouldReload`.
+- `redata`:
+    - Apply `mapper` to data.
+- Misc:
+    - Update README.
+    - Draw simple diagram explaining the data flow in `redata`.
+    - Unit tests overall.
 
 ## License
 

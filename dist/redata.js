@@ -6,13 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-// Default initial context for new redatas.
-var defaultInitialCtx = {
-    lastData: undefined, // Holds the last loaded data.
-    final: false };
-
-var defaultInitialData = { loading: true, error: undefined, result: undefined };
-
 function redata(loader) {
     var shouldReload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultShouldReload;
     var mapper = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : defaultMapper;
@@ -78,6 +71,13 @@ function redata(loader) {
 }
 
 // private stuff ----------------------------------------------------------------------------------
+
+// Default initial context for new redatas.
+var defaultInitialCtx = {
+    lastData: undefined, // Holds the last loaded data.
+    final: false };
+
+var defaultInitialData = { loading: true, error: undefined, result: undefined };
 
 function load(loader, params, onUpdate) {
     // Init new data.

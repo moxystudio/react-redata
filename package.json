@@ -47,6 +47,7 @@
     "rimraf": "^2.5.4"
   },
   "dependencies": {
-    "react": "^15.4.2"
+    "react": "^15.4.2",
+    "shallowequal": "^0.2.2"
   }
 }
