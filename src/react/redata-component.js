@@ -31,7 +31,7 @@ function redataComponent(boundRedata, OriginalComponent) {
             // Finalise configuration of our redata.
             redata = boundRedata(serverData);
 
-            // If nothing come from server, redata.
+            // If nothing came from server, redata.
             serverData === undefined && redata({
                 props: {},
                 nextProps: props,
@@ -46,7 +46,7 @@ function redataComponent(boundRedata, OriginalComponent) {
         }
 
         componentWillUpdate(nextProps) {
-// console.log('WrapperComponent::componentWillUpdate');
+            // console.log('WrapperComponent::componentWillUpdate');
             const { state, nextState } = this.state.originalComponentState;
 
             // Flow params into redata.
@@ -94,7 +94,7 @@ function redataComponent(boundRedata, OriginalComponent) {
         }
 
         _handleOnDataUpdate(data) {
-console.log('_handleOnDataUpdate', data);
+            console.log('_handleOnDataUpdate', data);
             this._safeSetState({ data });
         }
 
@@ -110,7 +110,7 @@ console.log('_handleOnDataUpdate', data);
     // Extend the OriginalComponent, so we get access to lifecycle methods and, consequently, the state changes.
     class ExtendedComponent extends OriginalComponent {
         componentWillUpdate(nextProps, nextState) {
-// console.log('ExtendedComponent::componentWillUpdate');
+            // console.log('ExtendedComponent::componentWillUpdate');
             // If OriginalComponent has a componentWillUpdate method, call it first.
             super.componentWillUpdate && super.componentWillUpdate(nextProps, nextState);
 

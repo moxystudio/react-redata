@@ -1,15 +1,41 @@
+/**
+ * redata's data object definition
+ * @typedef {Object} Data
+ * @property {boolean} loading - true if the loader is still running, false otherwise.
+ * @property {error} error - instance of Error in case the loader failed, undefined otherwise.
+ * @property {*} result - result of the loader, or undefined if the loader is still running.
+ */
+
+/**
+ * Loader function argument structure
+ * @typedef {Object} LoaderArguments
+ * @property {object} props - current component props
+ * @property {object} nextProps - next component props
+ * @property {object} state - current component state
+ * @property {object} nextState - next component state
+ * @property {object} data - currently loaded data
+ */
+
+/**
+ * @param {function} loader - called to fetch new data
+ * @param {function} [shouldReload = defaultShouldReload] - decides whether a redata should occur
+ * @param {function} [mapper = defaultMapper] - maps the {@link Data} object values to your component's props
+ * @param {object} [initialCtx = defaultInitialCtx] - starting point of redata, defines if there's any preloaded data
+ * @returns {function} redata wrapper function
+ */
 function configRedata(loader, shouldReload = defaultShouldReload, mapper = defaultMapper, initialCtx = defaultInitialCtx) {
     // Initialise context.
     const ctx = initialCtx;
 
     function redata(params, onUpdate) {
-console.log('triggered redata', {
-    shouldReload: shouldReload(params)
-}, arguments);
+        console.log('triggered redata', {
+            shouldReload: shouldReload(params),
+        }, arguments); // eslint-disable-line prefer-rest-params
+
         // If should not reload the data.
         if (!shouldReload(params)) {
             // Inform any subscriber.
-            onUpdate(ctx.lastData);
+            onUpdate && onUpdate(ctx.lastData);
 
             // Resolve with final data.
             return Promise.resolve(ctx.lastData);
@@ -52,7 +78,7 @@ console.log('triggered redata', {
         return loadResult;
     }
 
-    // Mark this function as being a redata, for internal purposes, speacially useful for compositions.
+    // Mark this function as being a redata function, for internal purposes, speacially useful for compositions.
     redata.isRedata = true;
 
     // Store the load, shouldReload and mapper for future reference in redata compositions.
@@ -73,21 +99,28 @@ const defaultInitialCtx = {
 
 const defaultInitialData = { loading: true, error: undefined, result: undefined };
 
+/**
+ * Calls the loader function with current params and returns a promise which resolves with the {@link data} format
+ * @param {function} loader - called to fetch new data
+ * @param {LoaderArguments} params - arguments object provided to loader function
+ * @param {function} onUpdate - called when new data arrives
+ * @return {Promise} - promise which resolves with the {@link data} format
+*/
 function load(loader, params, onUpdate) {
     // Init new data.
     const data = { ...defaultInitialData };
 
     // Start loading, passing the parameters that were provided, and return a promise for the loader resulting data.
     return loader(params)
-    .then((result) => { data.result = result; })
-    .catch((error) => { data.error = error; })
-    .then(() => {
-        data.loading = false;
+        .then((result) => { data.result = result; })
+        .catch((error) => { data.error = error; })
+        .then(() => {
+            data.loading = false;
 
-        onUpdate(data);
+            onUpdate(data);
 
-        return data;
-    });
+            return data;
+        });
 }
 
 function defaultShouldReload() {
