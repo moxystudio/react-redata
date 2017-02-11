@@ -20,7 +20,7 @@ function configRedata(loader, shouldReload = defaultShouldReload, mapper = defau
     function redata(params, onUpdate) {
         console.log('triggered redata', {
             shouldReload: shouldReload(params),
-        }, arguments); // eslint-disable-line prefer-rest-params
+        });
 
         // If should not reload the data.
         if (!shouldReload(params)) {
@@ -47,6 +47,8 @@ function configRedata(loader, shouldReload = defaultShouldReload, mapper = defau
             // If loader had already resolved, then this is a programmer error, and should just fail.
             if (ctx.final) {
                 // TODO: Consider adding a bit more context here.
+                // TODO: Actually, now that I think about it, it might be worth just ignoring the data. This might be a pattern
+                // for complex compositions, like .race().
                 throw new Error(`redata already finalised and new data received: ${JSON.stringify(data)}`);
             }
 
@@ -58,6 +60,14 @@ function configRedata(loader, shouldReload = defaultShouldReload, mapper = defau
         }).then((data) => {
             // If this is the last load, mark as no longer accepting onUpdate.
             ctx.promise === loadResult && (ctx.final = true);
+
+            // If lastData is not the same as the data received, then the user didn't call onUpdate, do it for them and store data.
+            if (ctx.lastData !== data) {
+                ctx.lastData = data;
+
+                // Inform any subscriber.
+                onUpdate && onUpdate(data);
+            }
 
             // Finally resolve load promise.
             return data;
@@ -101,7 +111,7 @@ function load(loader, params, onUpdate) {
     const data = { ...defaultInitialData };
 
     // Start loading, passing the parameters that were provided, and return a promise for the loader resulting data.
-    return loader(params)
+    return loader(params, onUpdate)
         .then((result) => { data.result = result; })
         .catch((error) => { data.error = error; })
         .then(() => {

@@ -22,8 +22,8 @@ function redataComponent(boundRedata, OriginalComponent) {
                 originalComponentState,
             };
 
-            this._handleOnDataUpdate = this._handleOnDataUpdate.bind(this);
-            this._handleOnStateUpdate = this._handleOnStateUpdate.bind(this);
+            this._handleOnRedataUpdate = this._handleOnRedataUpdate.bind(this);
+            this._handleOnOriginalComponentStateUpdate = this._handleOnOriginalComponentStateUpdate.bind(this);
 
             // If it's in the browser, check if there is data coming from server side rendering.
             const serverData = this._loadFromServerRender();
@@ -38,7 +38,7 @@ function redataComponent(boundRedata, OriginalComponent) {
                 state: originalComponentState.state,
                 nextState: originalComponentState.nextState,
                 data: serverData,
-            }, this._handleOnDataUpdate);
+            }, this._handleOnRedataUpdate);
         }
 
         componentDidMount() {
@@ -50,7 +50,7 @@ function redataComponent(boundRedata, OriginalComponent) {
             const { state, nextState } = this.state.originalComponentState;
 
             // Flow params into redata.
-            redata({ props: this.props, nextProps, state, nextState, data: this.state.data }, this._handleOnDataUpdate);
+            redata({ props: this.props, nextProps, state, nextState, data: this.state.data }, this._handleOnRedataUpdate);
 
             // If OriginalComponent state is changing, store nextState in state.
             state !== nextState && this._safeSetState({
@@ -67,7 +67,7 @@ function redataComponent(boundRedata, OriginalComponent) {
                 <ExtendedComponent
                     { ...this.props }
                     { ...this.state.data }
-                    onRedataOriginalComponentStateUpdate={ this._handleOnStateUpdate } />
+                    onRedataOriginalComponentStateUpdate={ this._handleOnOriginalComponentStateUpdate } />
             );
         }
 
@@ -93,12 +93,13 @@ function redataComponent(boundRedata, OriginalComponent) {
             return 'foo';
         }
 
-        _handleOnDataUpdate(data) {
-            console.log('_handleOnDataUpdate', data);
+        _handleOnRedataUpdate(data) {
+            console.log('_handleOnRedataUpdate', data);
+
             this._safeSetState({ data });
         }
 
-        _handleOnStateUpdate(state, nextState) {
+        _handleOnOriginalComponentStateUpdate(state, nextState) {
             this._safeSetState({
                 originalComponentState: { state, nextState },
             });
@@ -110,7 +111,8 @@ function redataComponent(boundRedata, OriginalComponent) {
     // Extend the OriginalComponent, so we get access to lifecycle methods and, consequently, the state changes.
     class ExtendedComponent extends OriginalComponent {
         componentWillUpdate(nextProps, nextState) {
-            // console.log('ExtendedComponent::componentWillUpdate');
+            console.log('ExtendedComponent::componentWillUpdate. Will redata?', !shallowequal(this.state, nextState));
+
             // If OriginalComponent has a componentWillUpdate method, call it first.
             super.componentWillUpdate && super.componentWillUpdate(nextProps, nextState);
 
