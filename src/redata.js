@@ -7,16 +7,6 @@
  */
 
 /**
- * Loader function argument structure
- * @typedef {Object} LoaderArguments
- * @property {object} props - current component props
- * @property {object} nextProps - next component props
- * @property {object} state - current component state
- * @property {object} nextState - next component state
- * @property {object} data - currently loaded data
- */
-
-/**
  * @param {function} loader - called to fetch new data
  * @param {function} [shouldReload = defaultShouldReload] - decides whether a redata should occur
  * @param {function} [mapper = defaultMapper] - maps the {@link Data} object values to your component's props
@@ -102,7 +92,7 @@ const defaultInitialData = { loading: true, error: undefined, result: undefined 
 /**
  * Calls the loader function with current params and returns a promise which resolves with the {@link data} format
  * @param {function} loader - called to fetch new data
- * @param {LoaderArguments} params - arguments object provided to loader function
+ * @param {object} params - arguments object provided to loader function
  * @param {function} onUpdate - called when new data arrives
  * @return {Promise} - promise which resolves with the {@link data} format
 */
