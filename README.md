@@ -79,7 +79,7 @@ export default redata(
 redata(loader[, shouldReload, mapper])(WrappedComponent)
 ```
 
-- `loader`: The function that is responsible for loading the data. Function is invoked with `({ props, state })` and should return a `Promise` for the data.
+- `loader`: The function that is responsible for loading the data. Function is invoked with `({ props, nextProps, state, nextState, data })` and should return a `Promise` for the retrieved data.
 - `shouldReload` *(optional)*:
 	- Function that decides whether the data should be reloaded or not, should return `boolean`.
 	- Called every time props or state changes, and defaults to `({ props, nextProps, state, nextState, data }) => false`, meaning that by default the data is only loaded once, and reused until the component is unmounted. `data` refers to the result of the last redata.
