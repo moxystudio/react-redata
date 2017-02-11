@@ -32,7 +32,7 @@ function configRedata(loader, shouldReload = defaultShouldReload, mapper = defau
         }
 
         // Data not valid, load new data and subscribe to its updates.
-        ctx.lastData = { ...defaultInitialData };
+        ctx.lastData = { ...defaultInitialData }; // TODO: consider removing this, since it should happen synchronously with load()
         ctx.final = false; // Not final, waiting to get results.
 
         // Update any subscriber about new data.
@@ -89,8 +89,6 @@ function configRedata(loader, shouldReload = defaultShouldReload, mapper = defau
     return redata;
 }
 
-// private stuff ----------------------------------------------------------------------------------
-
 // Default initial context for new redatas.
 const defaultInitialCtx = {
     lastData: undefined, // Holds the last loaded data.
@@ -98,6 +96,16 @@ const defaultInitialCtx = {
 };
 
 const defaultInitialData = { loading: true, error: undefined, result: undefined };
+
+function defaultShouldReload() {
+    return false;
+}
+
+function defaultMapper(data) {
+    return data;
+}
+
+// private stuff ----------------------------------------------------------------------------------
 
 /**
  * Calls the loader function with current params and returns a promise which resolves with the {@link data} format
@@ -109,6 +117,8 @@ const defaultInitialData = { loading: true, error: undefined, result: undefined 
 function load(loader, params, onUpdate) {
     // Init new data.
     const data = { ...defaultInitialData };
+
+    // TODO: should probably notify onUpdate here instead of resetting manually above at line 35 (ctx.lastData = { ...defaultInitialData };)
 
     // Start loading, passing the parameters that were provided, and return a promise for the loader resulting data.
     return loader(params, onUpdate)
@@ -123,14 +133,7 @@ function load(loader, params, onUpdate) {
         });
 }
 
-function defaultShouldReload() {
-    return false;
-}
-
-function defaultMapper(data) {
-    return data;
-}
-
 // ------------------------------------------------------------------------------------------------
 
 export default configRedata;
+export { defaultShouldReload, defaultMapper, defaultInitialCtx, defaultInitialData };
