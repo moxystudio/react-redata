@@ -1,4 +1,4 @@
-import configRedata, { defaultMapper, defaultInitialData } from './redata';
+import configRedata, { defaultMapper, defaultInitialData } from '../redata';
 import shallowequal from 'shallowequal';
 
 function compose(collectionHandler, items, shouldReload = defaultShouldReload, mapper = defaultMapper) {
