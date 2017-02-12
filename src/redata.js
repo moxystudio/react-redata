@@ -1,17 +1,19 @@
 /**
- * redata's data object definition
+ * redata's data object definition.
+ *
  * @typedef {Object} Data
- * @property {boolean} loading - true if the loader is still running, false otherwise.
- * @property {error} error - instance of Error in case the loader failed, undefined otherwise.
- * @property {*} result - result of the loader, or undefined if the loader is still running.
+ * @property {boolean} loading - True if the loader is still running, false otherwise.
+ * @property {error} error - Instance of Error in case the loader failed, undefined otherwise.
+ * @property {*} result - Result of the loader, or undefined if the loader is still running.
  */
 
 /**
- * @param {function} loader - called to fetch new data
- * @param {function} [shouldReload = defaultShouldReload] - decides whether a redata should occur
- * @param {function} [mapper = defaultMapper] - maps the {@link Data} object values to your component's props
- * @param {object} [initialCtx = defaultInitialCtx] - starting point of redata, defines if there's any preloaded data
- * @returns {function} redata wrapper function
+ * @param {function} loader - Called to fetch new data.
+ * @param {function} [shouldReload = defaultShouldReload] - Decides whether a redata should occur.
+ * @param {function} [mapper = defaultMapper] - Maps the {@link Data} object values to your component's props.
+ * @param {Object} [initialCtx = defaultInitialCtx] - Starting point of redata, defines if there's any preloaded data,
+ *
+ * @return {function} Redata wrapper function
  */
 function configRedata(loader, shouldReload = defaultShouldReload, mapper = defaultMapper, initialCtx = defaultInitialCtx) {
     // Initialise context.
@@ -108,11 +110,13 @@ function defaultMapper(data) {
 // private stuff ----------------------------------------------------------------------------------
 
 /**
- * Calls the loader function with current params and returns a promise which resolves with the {@link data} format
- * @param {function} loader - called to fetch new data
- * @param {object} params - arguments object provided to loader function
- * @param {function} onUpdate - called when new data arrives
- * @return {Promise} - promise which resolves with the {@link data} format
+ * Calls the loader function with current params and returns a promise which resolves with the {@link Data} format.
+ *
+ * @param {function} loader - Called to fetch new data.
+ * @param {object} params - Arguments object provided to loader function.
+ * @param {function} onUpdate - Called when new data arrives.
+ *
+ * @return {Promise} - Promise which resolves with the {@link data} format.
 */
 function load(loader, params, onUpdate) {
     // Init new data.
@@ -122,15 +126,15 @@ function load(loader, params, onUpdate) {
 
     // Start loading, passing the parameters that were provided, and return a promise for the loader resulting data.
     return loader(params, onUpdate)
-        .then((result) => { data.result = result; })
-        .catch((error) => { data.error = error; })
-        .then(() => {
-            data.loading = false;
+    .then((result) => { data.result = result; })
+    .catch((error) => { data.error = error; })
+    .then(() => {
+        data.loading = false;
 
-            onUpdate(data);
+        onUpdate(data);
 
-            return data;
-        });
+        return data;
+    });
 }
 
 // ------------------------------------------------------------------------------------------------
