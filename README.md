@@ -38,15 +38,15 @@ Here's an example of how you would redata a `ShoppingBag` component which requir
 
 ```js
 import React, { PureComponent, PropTypes } from 'react';
-import redata from 'redata';
+import { reactRedata } from 'redata';
 import fetchBag from './fetchBag';
 
 class ShoppingBag extends PureComponent {
 	render() {
 		const { result, loading, error } = this.props;
 
-		// loading and error are provided by redata, but you can rename
-		// or even drop any property that you don't need in the mapper
+		// Loading and error are provided by redata, but you can rename
+		// or even drop any property that you don't need in the mapper.
 		if (error || loading) {
 			return null; // you could render an error message or loading respectively
 		}
@@ -66,20 +66,20 @@ ShoppingBag.propTypes = {
 	result: PropTypes.array,
 };
 
-export default redata(
+export default reactRedata(
 	({ nextProps }) => fetchBag(nextProps.bagId),              // loader
 	({ props, nextProps }) => props.bagId !== nextProps.bagId, // shouldReload policy
 )(ShoppingBag);
 ```
 
 
-`redata` is a *Higher Order Component* with the following signature:
+`reactRedata` is a *Higher Order Component* with the following signature:
 
 ```js
-redata(loader[, shouldReload, mapper])(WrappedComponent)
+reactRedata(loader[, shouldReload, mapper, initialCtx])(WrappedComponent)
 ```
 
-- `loader`: The function that is responsible for loading the data. Function is invoked with `({ props, nextProps, state, nextState, data })` and should return a `Promise` for the retrieved data.
+- `loader`: The function that is responsible for loading the data. Function is invoked with `({ props, nextProps, state, nextState, data }, onUpdate)` and should return a `Promise` for the retrieved data. Your loader can call `onUpdate` in order to provide progressive data or somehow data that changes throughout time.
 - `shouldReload` *(optional)*:
 	- Function that decides whether the data should be reloaded or not, should return `boolean`.
 	- Called every time props or state changes, and defaults to `({ props, nextProps, state, nextState, data }) => false`, meaning that by default the data is only loaded once, and reused until the component is unmounted. `data` refers to the result of the last redata.
@@ -89,6 +89,7 @@ redata(loader[, shouldReload, mapper])(WrappedComponent)
 		- `error`: An instance of `Error` in case the loader failed, `undefined` otherwise.
 		- `result`: The result of the loader, or `undefined` if the loader is still running.
 	- The return value of this function is spread as props for your component.
+- `initialCtx` *(optional)*: Initial context for new redatas. This can be useful for situations in which you have previously obtained data that has been stored and possibly serialised, as in server side renders. Defaults to `{ lastData: undefined, /* Last loaded data */ final: false // Whether lastData is result of the resolved promise or result of onUpdate */ }`.
 
 
 ## The nitty-gritty details
@@ -117,6 +118,7 @@ Here's a breakdown of how the whole redata flow works:
     - Traverse tree, find redatas, wait for them to resolve, and store data in global store for client to pick up on.
     - Provide `state` and `nextState` to `shouldReload`.
 - `redata`:
+    - Add support for composed redatas. See http://bluebirdjs.com/docs/api-reference.html for Collections inspiration.
     - Apply `mapper` to data.
 - Misc:
     - Update README.

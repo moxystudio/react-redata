@@ -1,6 +1,5 @@
 /**
- * Redata's data object definition.
- *
+ * redata's data object definition
  * @typedef {Object} Data
  * @property {boolean} loading - True if the loader is still running, false otherwise.
  * @property {error} error - Instance of Error in case the loader failed, undefined otherwise.
@@ -22,7 +21,7 @@ function configRedata(loader, shouldReload = defaultShouldReload, mapper = defau
     function redata(params, onUpdate) {
         console.log('triggered redata', {
             shouldReload: shouldReload(params),
-        }, arguments); // eslint-disable-line prefer-rest-params
+        });
 
         // If should not reload the data.
         if (!shouldReload(params)) {
@@ -34,7 +33,7 @@ function configRedata(loader, shouldReload = defaultShouldReload, mapper = defau
         }
 
         // Data not valid, load new data and subscribe to its updates.
-        ctx.lastData = { ...defaultInitialData };
+        ctx.lastData = { ...defaultInitialData }; // TODO: consider removing this, since it should happen synchronously with load()
         ctx.final = false; // Not final, waiting to get results.
 
         // Update any subscriber about new data.
@@ -49,6 +48,8 @@ function configRedata(loader, shouldReload = defaultShouldReload, mapper = defau
             // If loader had already resolved, then this is a programmer error, and should just fail.
             if (ctx.final) {
                 // TODO: Consider adding a bit more context here.
+                // TODO: Actually, now that I think about it, it might be worth just ignoring the data. This might be a pattern
+                // for complex compositions, like .race().
                 throw new Error(`redata already finalised and new data received: ${JSON.stringify(data)}`);
             }
 
@@ -60,6 +61,14 @@ function configRedata(loader, shouldReload = defaultShouldReload, mapper = defau
         }).then((data) => {
             // If this is the last load, mark as no longer accepting onUpdate.
             ctx.promise === loadResult && (ctx.final = true);
+
+            // If lastData is not the same as the data received, then the user didn't call onUpdate, do it for them and store data.
+            if (ctx.lastData !== data) {
+                ctx.lastData = data;
+
+                // Inform any subscriber.
+                onUpdate && onUpdate(data);
+            }
 
             // Finally resolve load promise.
             return data;
@@ -81,8 +90,6 @@ function configRedata(loader, shouldReload = defaultShouldReload, mapper = defau
     return redata;
 }
 
-// private stuff ----------------------------------------------------------------------------------
-
 // Default initial context for new redatas.
 const defaultInitialCtx = {
     lastData: undefined, // Holds the last loaded data.
@@ -90,6 +97,16 @@ const defaultInitialCtx = {
 };
 
 const defaultInitialData = { loading: true, error: undefined, result: undefined };
+
+function defaultShouldReload() {
+    return false;
+}
+
+function defaultMapper(data) {
+    return data;
+}
+
+// private stuff ----------------------------------------------------------------------------------
 
 /**
  * Calls the loader function with current params and returns a promise which resolves with the {@link data} format.
@@ -104,8 +121,10 @@ function load(loader, params, onUpdate) {
     // Init new data.
     const data = { ...defaultInitialData };
 
+    // TODO: should probably notify onUpdate here instead of resetting manually above at line 35 (ctx.lastData = { ...defaultInitialData };)
+
     // Start loading, passing the parameters that were provided, and return a promise for the loader resulting data.
-    return loader(params)
+    return loader(params, onUpdate)
     .then((result) => { data.result = result; })
     .catch((error) => { data.error = error; })
     .then(() => {
@@ -117,14 +136,7 @@ function load(loader, params, onUpdate) {
     });
 }
 
-function defaultShouldReload() {
-    return false;
-}
-
-function defaultMapper(data) {
-    return data;
-}
-
 // ------------------------------------------------------------------------------------------------
 
 export default configRedata;
+export { defaultShouldReload, defaultMapper, defaultInitialCtx, defaultInitialData };
