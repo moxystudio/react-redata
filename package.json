@@ -47,6 +47,7 @@
     "rimraf": "^2.5.4"
   },
   "dependencies": {
+    "p-props": "^1.0.0",
     "react": "^15.4.2",
     "shallowequal": "^0.2.2"
   }
