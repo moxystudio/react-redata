@@ -1,5 +1,6 @@
 /**
- * redata's data object definition
+ * redata's data object definition.
+ *
  * @typedef {Object} Data
  * @property {boolean} loading - True if the loader is still running, false otherwise.
  * @property {error} error - Instance of Error in case the loader failed, undefined otherwise.

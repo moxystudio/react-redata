@@ -5,5 +5,8 @@
         "eslint-config-moxy/addons/browser.js",
         "eslint-config-moxy/addons/node.js",
         "eslint-config-moxy/addons/react.js"
-    ]
+    ],
+    "rules": {
+        "indent": ["error", 4, { "MemberExpression": 0 }]
+    }
 }
