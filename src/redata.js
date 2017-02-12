@@ -110,7 +110,7 @@ function defaultMapper(data) {
 // private stuff ----------------------------------------------------------------------------------
 
 /**
- * Calls the loader function with current params and returns a promise which resolves with the {@link data} format.
+ * Calls the loader function with current params and returns a promise which resolves with the {@link Data} format.
  *
  * @param {function} loader - Called to fetch new data.
  * @param {object} params - Arguments object provided to loader function.
