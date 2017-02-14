@@ -17,34 +17,40 @@ import props from './composition/props';
  * @param {object} [initialCtx = defaultInitialCtx] - starting point of redata, defines if there's any preloaded data
  * @returns {function} redata wrapper function
  */
-function configRedata(loader, shouldReload = defaultShouldReload, mapper = defaultMapper, initialCtx = defaultInitialCtx) {
+function create(loader, shouldReload = defaultShouldReload, mapper = defaultMapper, initialCtx = defaultInitialCtx) {
     // Initialise context, which is passed around and holds the lastData.
-    const ctx = initialCtx;
+    const ctx = initialCtx; // TODO: instead of providing a full initial context, the redata() function below should receive
+                            // a third argument, initialData, which is stored in the ctx. This allows for composed
+                            // redatas to be fed initially.
 
     function redata(params, onUpdate) {
+// console.log('redata()', params);
         // If should not reload the data.
         if (!shouldReload(params)) {
+console.log('will not reload');
             // Inform any subscriber.
             onUpdate && onUpdate(ctx.lastData);
 
             // Resolve with last data.
             return Promise.resolve(ctx.lastData);
         }
-
+console.log('will reload');
         // Data not valid, will load new data and subscribe to its updates.
-        // Reset the lastData, since it is no longer valid.
+        // Reset lastData, since it is no longer valid.
         ctx.lastData = { ...defaultInitialData };
-
+// debugger;
         // Update any subscriber about new data.
         onUpdate && onUpdate(ctx.lastData);
 
         // Store promise reference in order to check which is the last one if multiple resolve.
         ctx.promise = load(ctx, loader, params, onUpdate);
-
+// console.log('storing ctx promise', ctx.promise);
+ctx.promise.loader = loader;
         return ctx.promise;
     }
 
-    // Store mapper for future reference in redata compositions.
+    // Store shouldReload and mapper for future reference in redata compositions.
+    redata.shouldReload = shouldReload;
     redata.map = mapper;
 
     return redata;
@@ -70,11 +76,13 @@ function defaultMapper(data) {
 function load(ctx, loader, params, onUpdate) {
     // Create an object that holds the loadedData promise, so we can compare on handleLoadResult, and ignore promises that
     // did not originate from the very last load that happened.
-    const loadedData = {};
+    const loadedData = {
+        loading: true, // Start off "loading", but once the promise below resolves, this value is false.
+    };
 
-    loadedData.promise = loader(params, handleLoadResult.bind(null, ctx, loadedData, onUpdate, true))
-                                  .then(handleLoadResult.bind(null, ctx, loadedData, onUpdate, false, undefined))
-                                 .catch(handleLoadResult.bind(null, ctx, loadedData, onUpdate, false));
+    loadedData.promise = loader(params, handleLoadResult.bind(null, ctx, loadedData, onUpdate, undefined)) // Do not affect loading status.
+                                  .then(handleLoadResult.bind(null, ctx, loadedData, onUpdate, false, undefined)) // Success, not loading.
+                                 .catch(handleLoadResult.bind(null, ctx, loadedData, onUpdate, false)); // Failed, not loading.
 
     // Return promise for data.
     return loadedData.promise;
@@ -83,22 +91,25 @@ function load(ctx, loader, params, onUpdate) {
 function handleLoadResult(ctx, loadedData, onUpdate, loading, error, result) {
     // If not the promise from last load, ignore.
     if (ctx.promise !== loadedData.promise) {
+console.log('IGNORING', ctx.promise, loadedData.promise);
         return;
     }
 
     const lastData = ctx.lastData;
 
+    // If loading status was provided, update loadedData.
+    loading !== undefined && (loadedData.loading = loading);
+
     // Store final data.
-    ctx.lastData = { loading, error, result };
+    ctx.lastData = { loading: loadedData.loading, error, result };
 
-    // If lastData and final data not the same, then user didn't call onUpdate. Do it for them.
+    // If lastData and received data not shallow equal, then loader didn't call onUpdate. Implicitly do it.
     onUpdate && !shallowequal(lastData, ctx.lastData) && onUpdate(ctx.lastData);
-
-    // Finally resolve load promise.
+console.log('handleLoadResult', ctx.lastData);
     return ctx.lastData;
 }
 
 // ------------------------------------------------------------------------------------------------
 
-export default configRedata;
+export default create;
 export { defaultShouldReload, defaultMapper, defaultInitialCtx, defaultInitialData, props, compose };
