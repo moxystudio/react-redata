@@ -66,33 +66,33 @@ export function renderToStringWithRedata(component) {
 // private stuff ----------------------------------------------------------------------------------
 
 /**
- * Gets all redata promises for the node provided.
+ * Gets all redata promises for the element provided.
  *
- * @param {ReactElement | DOMElement} rootElement - Node being inspected.
+ * @param {ReactElement | DOMElement} rootElement - element being inspected.
  * @param {boolean} [fetchRoot = true] - True if the root redata should be done on the server, false otherwise.
  *
  * @return {Promise<Object>} - redata store
  */
-function getQueriesFromTree({ rootElement, rootContext = {} }, fetchRoot = true
-) {
+function getQueriesFromTree({ rootElement, rootContext = {} }, fetchRoot = true) {
     const queries = [];
 
     reactTraverseTree(rootElement, rootContext, (element, instance, context) => {
         const skipRoot = !fetchRoot && (element === rootElement);
 
+        // note: here we need to check how we'll get the component load promise
         if (instance && typeof instance.fetchData === 'function' && !skipRoot) {
             const promise = instance.fetchData();
 
             if (promise) {
                 queries.push({ promise, element, context });
 
-                // Tell reactTraverseTree to not recurse inside this component.
+                // Tell reactTraverseTree to not recurse inside this component yet.
                 // We have to wait for the promise to resolve before attempting it.
                 return false;
             }
-            // if no data loading needs where found, tell reactTraverseTree to keep walking
-            return true;
         }
+        // if no data loading needs where found, tell reactTraverseTree to keep walking
+        return true;
     });
 
     return queries;
