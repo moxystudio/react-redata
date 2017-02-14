@@ -1,4 +1,5 @@
 import { defaultInitialData, defaultMapper } from '../redata';
+
 import shallowequal from 'shallowequal';
 
 function compose(collectionHandler, items) {
