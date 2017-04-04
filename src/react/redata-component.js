@@ -4,9 +4,6 @@ import shallowequal from 'shallowequal';
 // public stuff -----------------------------------------------------------------------------------
 
 function redataComponent(boundRedata, OriginalComponent) {
-    // Will hold redata that is shared by Wrapper and Extended components.
-    let redata;
-
     class WrapperComponent extends PureComponent {
         constructor(props) {
             super(props);
@@ -28,11 +25,11 @@ function redataComponent(boundRedata, OriginalComponent) {
             // If it's in the browser, check if there is data coming from server side rendering.
             const serverData = this._loadFromServerRender();
 
-            // Finalise configuration of our redata.
-            redata = boundRedata(serverData);
+            // Finalise configuration of our redata, and provide it publicly, so that it can be called directly in Server Side Rendering.
+            this.redata = boundRedata(serverData);
 
             // If nothing came from server, redata.
-            serverData === undefined && redata({
+            serverData === undefined && this.redata({
                 props: {},
                 nextProps: props,
                 state: originalComponentState.state,
@@ -50,7 +47,7 @@ function redataComponent(boundRedata, OriginalComponent) {
             const { state, nextState } = this.state.originalComponentState;
 
             // Flow params into redata.
-            redata({ props: this.props, nextProps, state, nextState, data: this.state.data }, this._handleOnRedataUpdate);
+            this.redata({ props: this.props, nextProps, state, nextState, data: this.state.data }, this._handleOnRedataUpdate);
 
             // If OriginalComponent state is changing, store nextState in state.
             state !== nextState && this._safeSetState({

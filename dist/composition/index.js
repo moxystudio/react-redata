@@ -1,8 +1,9 @@
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
+exports.props = undefined;
 
 var _compose = require('./compose');
 
@@ -14,8 +15,6 @@ var _props2 = _interopRequireDefault(_props);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = {
-    compose: _compose2.default,
-    props: _props2.default
-};
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9jb21wb3NpdGlvbi9pbmRleC5qcyJdLCJuYW1lcyI6WyJjb21wb3NlIiwicHJvcHMiXSwibWFwcGluZ3MiOiI7Ozs7OztBQUFBOzs7O0FBQ0E7Ozs7OztrQkFFZTtBQUNYQSw4QkFEVztBQUVYQztBQUZXLEMiLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgY29tcG9zZSBmcm9tICcuL2NvbXBvc2UnO1xuaW1wb3J0IHByb3BzIGZyb20gJy4vcHJvcHMnO1xuXG5leHBvcnQgZGVmYXVsdCB7XG4gICAgY29tcG9zZSxcbiAgICBwcm9wcyxcbn07XG4iXX0=
+exports.default = _compose2.default;
+exports.props = _props2.default;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9jb21wb3NpdGlvbi9pbmRleC5qcyJdLCJuYW1lcyI6WyJwcm9wcyJdLCJtYXBwaW5ncyI6Ijs7Ozs7OztBQUFBOzs7O0FBQ0E7Ozs7Ozs7UUFHU0EsSyIsImZpbGUiOiJpbmRleC5qcyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBjb21wb3NlIGZyb20gJy4vY29tcG9zZSc7XG5pbXBvcnQgcHJvcHMgZnJvbSAnLi9wcm9wcyc7XG5cbmV4cG9ydCBkZWZhdWx0IGNvbXBvc2U7XG5leHBvcnQgeyBwcm9wcyB9O1xuIl19

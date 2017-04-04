@@ -1,48 +1,61 @@
-import configRedata, { defaultMapper, defaultInitialData } from '../redata';
+import { defaultInitialData, defaultMapper } from '../redata';
+
 import shallowequal from 'shallowequal';
 
-function compose(collectionHandler, items, shouldReload = defaultShouldReload, mapper = defaultMapper) {
-    // Init a ctx which will hold the data of the composition.
-    const ctx = {};
+function compose(collectionHandler, items) {
+    // Init a composition which will hold the data.
+    const composition = {};
 
-    // Create a redata that composes the multiple redata items and handles resolution of the Promise using the collectionHandler.
-    return configRedata(composeLoader.bind(null, ctx, collectionHandler, items, (key, data) => {
-        // Store data in its key.
-        ctx.newData[key] = data;
-    }), shouldReload, mapper)
-    // collectionHandler determined that composition is over.
-    .then((data) => {
-        // Make sure that the resolved data is stored in newData.
-        ctx.newData = data;
+    // Create a loader that composes the multiple redata items and handles resolution of the Promise using the collectionHandler.
+    return composeLoader.bind(null, composition, collectionHandler, items, updateComposition.bind(null, composition));
+}
 
-        // if lastData and newData are shallow equal, then use lastData, so that the memory reference doesn't change.
-        if (shallowequal(data, ctx.lastData)) {
-            ctx.newData = ctx.lastData;
+// Default shouldReload that goes through each item redata and asks if the reload is necessary. If any says that it is, a redata happens.
+function defaultShouldReload(items, params) {
+    // Go through all and check if any redata shouldReload.
+    for (const key in items) {
+        if (items[key].shouldReload(params)) {
+            return true;
         }
+    }
 
-        // Resolve composition.
-        return ctx.newData;
-    });
+    return false;
 }
 
 // private stuff ----------------------------------------------------------------------------------
 
-function composeLoader(ctx, collectionHandler, items, params, onUpdate) {
-    ctx.newData = mapKeys(items, () => defaultInitialData);
-    ctx.final = false;
+function composeLoader(composition, collectionHandler, items, onUpdate, params) {
+console.log('composeLoader', Array.prototype.slice.call(arguments));
+    composition.data = mapKeys(items, () => defaultInitialData);
 
-    return collectionHandler(mapKeys(items, (redata, key) => redata(params, onUpdate.bind(null, key))));
+    // Create object with keys and respective redatas bound to the params and onUpdate provided to this loader, and wait for
+    // the collectionHandler to determine that the redata collection is resolved.
+    return collectionHandler(mapKeys(items, (redata, key) => redata(params, onUpdate.bind(null, key))))
+    // collectionHandler determined that composition is over.
+    .then((data) => {
+console.log('collectionHandler.then', data)
+        // If composition data and resolved data are shallow equal, then use data, so that the memory reference doesn't change.
+        if (!shallowequal(data, composition.data)) {
+            composition.data = data;
+        } else {
+            // Merge previous keys from lastData that are not present in new data. These were provided by onUpdate calls.
+            composition.data = { ...composition.data, ...data };
+        }
+
+        // Resolve composition.
+        return composition.data;
+    });
 }
 
-// By default, any composition should reload, and it's up to the parts to decide what to do.
-function defaultShouldReload() {
-    return true;
+function updateComposition(composition, key, data) {
+console.log('updateComposition', key, data);
+    composition.data = { ...composition.data, [key]: data };
 }
 
 function mapKeys(obj, iteratee = (value) => value) {
     const newObj = {};
 
-    Object.keys(obj).each((key) => {
+    Object.keys(obj).forEach((key) => {
         newObj[key] = iteratee(obj[key], key, obj);
     });
 
@@ -50,3 +63,4 @@ function mapKeys(obj, iteratee = (value) => value) {
 }
 
 export default compose;
+export { defaultShouldReload, defaultMapper };

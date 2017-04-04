@@ -1,5 +1,8 @@
-import configRedata from './redata';
+import create from './redata';
+import compose, * as composition from './composition/compose';
 import reactRedata from './react/react-redata';
 
-export default configRedata;
-export { reactRedata };
+// exports
+
+export default create;
+export { reactRedata, composition, compose };
