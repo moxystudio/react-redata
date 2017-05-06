@@ -11,7 +11,7 @@
 [travis-image]:http://img.shields.io/travis/moxystudio/react-redata/master.svg
 [david-dm-url]:https://david-dm.org/moxystudio/react-redata
 [david-dm-image]:https://img.shields.io/david/moxystudio/react-redata.svg
-[david-dm-dev-url]:https://david-dm.org/moxystudio/react-redata#info=devDependencies
+[david-dm-dev-url]:https://david-dm.org/moxystudio/react-redata?type=dev
 [david-dm-dev-image]:https://img.shields.io/david/dev/moxystudio/react-redata.svg
 
 React data container for isomorphic applications, providing a unified and performant load & reload pattern.
